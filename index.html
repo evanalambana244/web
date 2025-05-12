@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentation - Pemrograman Web 2 Project</title>
+    <style>
+        /* Global Styles */
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        header {
+            background: #333;
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+        }
+
+        header h1 {
+            margin: 0;
+        }
+
+        nav ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        nav ul li {
+            display: inline;
+            margin-right: 20px;
+        }
+
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+        }
+
+        section {
+            padding: 20px;
+            margin: 20px;
+            background-color: white;
+            border-radius: 8px;
+        }
+
+        pre code {
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+
+        footer {
+            text-align: center;
+            padding: 10px;
+            background: #333;
+            color: white;
+            position: absolute;
+            width: 100%;
+            bottom: 0;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Pemrograman Web 2: Laravel Project Documentation</h1>
+        <nav>
+            <ul>
+                <li><a href="#overview">Project Overview</a></li>
+                <li><a href="#database">Database Migrations</a></li>
+                <li><a href="#crud">CRUD System</a></li>
+                <li><a href="#fluxui">FluxUI Integration</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section id="overview">
+        <h2>Project Overview</h2>
+        <p>This project aims to create a database with tables for managing customers, orders, and order details. The system includes a CRUD (Create, Read, Update, Delete) functionality for managing products using FluxUI for the front-end interface and Laravel controllers for back-end logic.</p>
+    </section>
+
+    <section id="database">
+        <h2>Database Migrations</h2>
+        <p>The database consists of three main tables: <strong>Customers</strong>, <strong>Orders</strong>, and <strong>Order Details</strong>. Each table is created using Laravel migrations.</p>
+        
+        <h3>Customers Table Migration</h3>
+        <pre><code>
+        php artisan make:migration create_customers_table
+        </code></pre>
+        <p>The migration file for creating the customers table looks like this:</p>
+        <pre><code>
+        public function up()
+        {
+            Schema::create('customers', function (Blueprint $table) {
+                $table->id();
+                $table->string('name');
+                $table->string('email')->unique();
+                $table->timestamps();
+            });
+        }
+        </code></pre>
+
+        <h3>Orders Table Migration</h3>
+        <pre><code>
+        php artisan make:migration create_orders_table
+        </code></pre>
+        <p>The migration for the orders table:</p>
+        <pre><code>
+        public function up()
+        {
+            Schema::create('orders', function (Blueprint $table) {
+                $table->id();
+                $table->unsignedBigInteger('customer_id');
+                $table->foreign('customer_id')->references('id')->on('customers');
+                $table->decimal('total', 8, 2);
+                $table->timestamps();
+            });
+        }
+        </code></pre>
+
+        <h3>Order Details Table Migration</h3>
+        <pre><code>
+        php artisan make:migration create_order_details_table
+        </code></pre>
+        <p>Finally, the order details table:</p>
+        <pre><code>
+        public function up()
+        {
+            Schema::create('order_details', function (Blueprint $table) {
+                $table->id();
+                $table->unsignedBigInteger('order_id');
+                $table->foreign('order_id')->references('id')->on('orders');
+                $table->string('product_name');
+                $table->integer('quantity');
+                $table->decimal('price', 8, 2);
+                $table->timestamps();
+            });
+        }
+        </code></pre>
+    </section>
+
+    <section id="crud">
+        <h2>CRUD System</h2>
+        <p>The CRUD system enables the creation, reading, updating, and deletion of product data. Laravel controllers handle the logic for each operation.</p>
+        
+        <h3>Laravel Controller for CRUD</h3>
+        <p>To create a controller for products:</p>
+        <pre><code>
+        php artisan make:controller ProductController
+        </code></pre>
+        <p>Inside the controller, you can implement the CRUD methods:</p>
+        <pre><code>
+        public function index()
+        {
+            $products = Product::all();
+            return view('products.index', compact('products'));
+        }
+
+        public function store(Request $request)
+        {
+            Product::create($request->all());
+            return redirect()->route('products.index');
+        }
+
+        public function update(Request $request, $id)
+        {
+            $product = Product::findOrFail($id);
+            $product->update($request->all());
+            return redirect()->route('products.index');
+        }
+
+        public function destroy($id)
+        {
+            $product = Product::findOrFail($id);
+            $product->delete();
+            return redirect()->route('products.index');
+        }
+        </code></pre>
+    </section>
+
+    <section id="fluxui">
+        <h2>FluxUI Integration</h2>
+        <p>FluxUI is used for creating a dynamic and responsive front-end interface. It interacts with the backend controllers to display product information and perform CRUD actions.</p>
+
+        <h3>Setting Up FluxUI</h3>
+        <p>Include FluxUI components in your Blade views:</p>
+        <pre><code>
+        <link rel="stylesheet" href="path/to/fluxui.css">
+        <script src="path/to/fluxui.js"></script>
+        </code></pre>
+
+        <h3>Example FluxUI Product List</h3>
+        <div id="fluxui-product-list"></div>
+        <script>
+            
+
+            // FluxUI integration example
+            function renderProductList() {
+                let productList = '';
+                products.forEach(product => {
+                    productList += `<div class="product-item">
+                        <h4>${product.name}</h4>
+                        <p>${product.price}</p>
+                    </div>`;
+                });
+                document.getElementById('fluxui-product-list').innerHTML = productList;
+            }
+
+            renderProductList();
+        </script>
+    </section>
+
+    <footer>
+        <p>&copy; 2025 Pemrograman Web 2 - Documentation</p>
+    </footer>
+</body>
+</html>
